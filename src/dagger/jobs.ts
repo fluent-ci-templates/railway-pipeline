@@ -4,6 +4,8 @@ export enum Job {
   deploy = "deploy",
 }
 
+export const exclude = [".git", "node_modules", ".fluentci"];
+
 export const deploy = async (client: Client, src = ".") => {
   const context = client.host().directory(src);
 
@@ -20,9 +22,7 @@ export const deploy = async (client: Client, src = ".") => {
     .withExec(["apk", "add", "curl", "bash", "tar"])
     .withExec(["sh", "-c", "bash <(curl -fsSL cli.new)"])
     .withEnvVariable("RAILWAY_TOKEN", Deno.env.get("RAILWAY_TOKEN")!)
-    .withDirectory("/app", context, {
-      exclude: [".git", "node_modules", ".fluentci"],
-    })
+    .withDirectory("/app", context, { exclude })
     .withWorkdir("/app")
     .withExec(["sh", "-c", "railway up"]);
 
