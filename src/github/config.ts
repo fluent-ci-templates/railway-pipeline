@@ -21,7 +21,7 @@ export function generateYaml(): Workflow {
       {
         uses: "denoland/setup-deno@v1",
         with: {
-          "deno-version": "v1.36",
+          "deno-version": "v1.37",
         },
       },
       {
@@ -34,7 +34,7 @@ export function generateYaml(): Workflow {
       },
       {
         name: "Run Dagger Pipelines",
-        run: "dagger run fluentci railway_pipeline",
+        run: "fluentci run railway_pipeline",
         env: {
           RAILWAY_TOKEN: "${{ secrets.RAILWAY_TOKEN }}",
         },

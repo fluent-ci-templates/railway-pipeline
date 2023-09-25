@@ -12,7 +12,7 @@ A ready-to-use CI/CD Pipeline for deploying your applications to [Railway](https
 Run the following command:
 
 ```bash
-dagger run fluentci railway_pipeline
+fluentci run railway_pipeline
 ```
 
 ## Environment Variables

@@ -17,7 +17,7 @@ jobs:
           dagger version
       - run:
           name: Run Dagger Pipelines
-          command: dagger run fluentci railway_pipeline
+          command: fluentci runrailway_pipeline
     machine:
       image: ubuntu-2004:2023.07.1
     environment:

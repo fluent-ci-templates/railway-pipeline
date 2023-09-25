@@ -31,7 +31,7 @@ dagger version`,
       {
         run: {
           name: "Run Dagger Pipelines",
-          command: "dagger run fluentci railway_pipeline",
+          command: "fluentci run railway_pipeline",
         },
       },
     ]);

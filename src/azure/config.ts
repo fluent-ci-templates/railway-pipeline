@@ -37,7 +37,7 @@ export function generateYaml(): AzurePipeline {
       displayName: "Setup Dagger",
     })
     .step({
-      script: "dagger run fluentci railway_pipeline",
+      script: "fluentci run railway_pipeline",
       displayName: "Run Dagger Pipelines",
     });
   return azurePipeline;
