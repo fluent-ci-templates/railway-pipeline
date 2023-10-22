@@ -1,0 +1,5 @@
+{
+  "root": "",
+  "name": "railway",
+  "sdkRuntime": "tsiry/dagger-sdk-deno"
+}
