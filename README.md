@@ -27,6 +27,10 @@ fluentci run railway_pipeline
 |---------|----------------------------------|
 | deploy  | Deploys your application to Railway. |
 
+```graphql
+deploy(src: String!, token: String!): String
+```
+
 ## Programmatic usage
 
 You can also use this pipeline programmatically:
