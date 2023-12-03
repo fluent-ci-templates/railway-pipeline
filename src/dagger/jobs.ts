@@ -1,4 +1,6 @@
-import Client, { connect } from "../../deps.ts";
+import Client, { Directory, Secret } from "../../deps.ts";
+import { connect } from "../../sdk/connect.ts";
+import { getDirectory, getRailwayToken } from "./lib.ts";
 
 export enum Job {
   deploy = "deploy",
@@ -6,17 +8,24 @@ export enum Job {
 
 export const exclude = [".git", "node_modules", ".fluentci"];
 
-export const deploy = async (src = ".", token?: string) => {
+/**
+ * @function
+ * @description Deploy to Railway
+ * @param {Directory | string} src The directory to deploy
+ * @param {Secret | string} token Railway token
+ * @returns {Promise<string>}
+ */
+export async function deploy(
+  src: Directory | string,
+  token: Secret | string
+): Promise<string> {
   await connect(async (client: Client) => {
-    const context = client.host().directory(src);
+    const context = getDirectory(client, src);
+    const secret = getRailwayToken(client, token);
 
-    if (!Deno.env.get("RAILWAY_TOKEN") && !token) {
-      console.log("RAILWAY_TOKEN is not set");
+    if (!secret) {
+      console.error("RAILWAY_TOKEN is not set");
       Deno.exit(1);
-    }
-
-    if (token) {
-      Deno.env.set("RAILWAY_TOKEN", token);
     }
 
     const ctr = client
@@ -26,7 +35,7 @@ export const deploy = async (src = ".", token?: string) => {
       .withExec(["apk", "update"])
       .withExec(["apk", "add", "curl", "bash", "tar"])
       .withExec(["sh", "-c", "bash <(curl -fsSL cli.new)"])
-      .withEnvVariable("RAILWAY_TOKEN", Deno.env.get("RAILWAY_TOKEN")!)
+      .withSecretVariable("RAILWAY_TOKEN", secret)
       .withDirectory("/app", context, { exclude })
       .withWorkdir("/app")
       .withExec(["sh", "-c", "railway up"]);
@@ -37,16 +46,12 @@ export const deploy = async (src = ".", token?: string) => {
   });
 
   return "done";
-};
+}
 
-export type JobExec = (src?: string) =>
-  | Promise<string>
-  | ((
-      src?: string,
-      options?: {
-        ignore: string[];
-      }
-    ) => Promise<string>);
+export type JobExec = (
+  src: Directory | string,
+  token: Secret | string
+) => Promise<string>;
 
 export const runnableJobs: Record<Job, JobExec> = {
   [Job.deploy]: deploy,
