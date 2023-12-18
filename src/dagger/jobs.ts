@@ -19,6 +19,7 @@ export async function deploy(
   src: Directory | string,
   token: Secret | string
 ): Promise<string> {
+  let result = "";
   await connect(async (client: Client) => {
     const context = getDirectory(client, src);
     const secret = getRailwayToken(client, token);
@@ -40,12 +41,10 @@ export async function deploy(
       .withWorkdir("/app")
       .withExec(["sh", "-c", "railway up"]);
 
-    const result = await ctr.stdout();
-
-    console.log(result);
+    result = await ctr.stdout();
   });
 
-  return "done";
+  return result;
 }
 
 export type JobExec = (
