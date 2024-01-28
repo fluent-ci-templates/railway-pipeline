@@ -1,5 +1,4 @@
-import Client, { Directory, Secret } from "../../deps.ts";
-import { connect } from "../../sdk/connect.ts";
+import { Directory, Secret, dag } from "../../deps.ts";
 import { getDirectory, getRailwayToken } from "./lib.ts";
 
 export enum Job {
@@ -19,31 +18,27 @@ export async function deploy(
   src: Directory | string,
   token: Secret | string
 ): Promise<string> {
-  let result = "";
-  await connect(async (client: Client) => {
-    const context = getDirectory(client, src);
-    const secret = getRailwayToken(client, token);
+  const context = await getDirectory(dag, src);
+  const secret = await getRailwayToken(dag, token);
 
-    if (!secret) {
-      console.error("RAILWAY_TOKEN is not set");
-      Deno.exit(1);
-    }
+  if (!secret) {
+    console.error("RAILWAY_TOKEN is not set");
+    Deno.exit(1);
+  }
 
-    const ctr = client
-      .pipeline(Job.deploy)
-      .container()
-      .from("alpine:latest")
-      .withExec(["apk", "update"])
-      .withExec(["apk", "add", "curl", "bash", "tar"])
-      .withExec(["sh", "-c", "bash <(curl -fsSL cli.new)"])
-      .withSecretVariable("RAILWAY_TOKEN", secret)
-      .withDirectory("/app", context, { exclude })
-      .withWorkdir("/app")
-      .withExec(["sh", "-c", "railway up"]);
+  const ctr = dag
+    .pipeline(Job.deploy)
+    .container()
+    .from("alpine:latest")
+    .withExec(["apk", "update"])
+    .withExec(["apk", "add", "curl", "bash", "tar"])
+    .withExec(["sh", "-c", "bash <(curl -fsSL cli.new)"])
+    .withSecretVariable("RAILWAY_TOKEN", secret)
+    .withDirectory("/app", context, { exclude })
+    .withWorkdir("/app")
+    .withExec(["sh", "-c", "railway up"]);
 
-    result = await ctr.stdout();
-  });
-
+  const result = await ctr.stdout();
   return result;
 }
 
