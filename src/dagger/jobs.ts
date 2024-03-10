@@ -1,4 +1,8 @@
-import { Directory, Secret, dag } from "../../deps.ts";
+/**
+ * @module railway
+ * @description This module provides a function to deploy to Railway
+ */
+import { Directory, Secret, dag, exit } from "../../deps.ts";
 import { getDirectory, getRailwayToken } from "./lib.ts";
 
 export enum Job {
@@ -8,6 +12,8 @@ export enum Job {
 export const exclude = [".git", "node_modules", ".fluentci"];
 
 /**
+ * Deploy to Railway
+ *
  * @function
  * @description Deploy to Railway
  * @param {Directory | string} src The directory to deploy
@@ -18,12 +24,13 @@ export async function deploy(
   src: Directory | string,
   token: Secret | string
 ): Promise<string> {
-  const context = await getDirectory(dag, src);
-  const secret = await getRailwayToken(dag, token);
+  const context = await getDirectory(src);
+  const secret = await getRailwayToken(token);
 
   if (!secret) {
     console.error("RAILWAY_TOKEN is not set");
-    Deno.exit(1);
+    exit(1);
+    return "";
   }
 
   const ctr = dag
@@ -38,8 +45,7 @@ export async function deploy(
     .withWorkdir("/app")
     .withExec(["sh", "-c", "railway up"]);
 
-  const result = await ctr.stdout();
-  return result;
+  return ctr.stdout();
 }
 
 export type JobExec = (
